@@ -50,7 +50,7 @@ isn't already claimed as a crates.io username (We could choose to wait to allow 
 until we have multiple ways of logging in, but we could also choose to enable username editing
 sooner). Thus, crates.io usernames will become first-come-first-served as crate names are today.
 Crates.io admins will not change an account's username without the consent of the current username
-holder (see [Unresolved Questions][#unresolved-questions] about username squatting).
+holder (see [Unresolved Questions](#unresolved-questions) about username squatting).
 
 When you visit a user's page at `https://crates.io/users/example_username`, see a user account
 listed as an owner of a crate in the crate's sidebar, or run `cargo owner add example_username`
