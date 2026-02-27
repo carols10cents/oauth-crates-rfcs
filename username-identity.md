@@ -60,14 +60,11 @@ GitHub username". Given that the common case, and what people are used to being 
 be that the GitHub and crates.io usernames will match, this will make it obvious in cases where
 that assumption does not hold.
 
-If you create an account on crates.io with an OAuth account (GitHub or otherwise) whose username is
-NOT currently claimed on crates.io, your crates.io username will automatically be set to your
-associated account's username without asking you to confirm (but you will be able to edit it on the
-account settings page later).
-
-If you create an account on crates.io with an OAuth account (GitHub or otherwise) whose username
-HAS already been taken on crates.io, you will be required to choose a different username that isn't
-taken before your account is actually created.
+When you create an account on crates.io with an OAuth account (GitHub or otherwise), whether or not
+the associated OAuth account's username is currently claimed on crates.io, you will be asked to
+register your crates.io account by choosing a username that hasn't yet been taken on crates.io. The
+crates.io username field will be prefilled with the associated OAuth account's username and an
+indication of whether that username is available on crates.io or not.
 
 ## Renamed and deleted accounts
 
