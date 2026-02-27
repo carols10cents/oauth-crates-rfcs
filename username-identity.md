@@ -114,6 +114,26 @@ user `best_rust_programmer_ever` will need to choose a different crates.io usern
 accounts will have the warning symbol. The latter user may see this as unfair, but this is where
 the first-come-first-serve policy should be enforced.
 
+## Crates.io username requirements
+
+Crates.io usernames will largely use the same rules that GitHub usernames use today. All existing
+crates.io accounts will be valid under whatever rules we decide on.
+
+Crates.io usernames must:
+
+- Only contain alphanumeric characters `[a-zA-Z0-9]`, hyphens `-`, and underscores `_`.
+- Be unique case insensitively and hyphen/underscore insensitively, much like crate names. That is,
+  uniqueness will be determined by normalizing case and normalizing hyphens and underscores
+  together. For example, the crates.io usernames `hello-there` and `Hello_There` will be considered
+  to be the same: once a user named `hello-there` exists, a user named `Hello_There` will not be
+  allowed.
+- Not start or end with a hyphen or underscore
+- Not have consecutive hyphen or underscore characters.
+- Not exceed 39 characters.
+
+These requirements will be clearly documented on a page on crates.io as well as in the signup form
+when we are requiring the person to pick a crates.io username.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
