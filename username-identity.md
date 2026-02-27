@@ -81,7 +81,10 @@ actions:
 4. Never logs in to crates.io with that GitHub account again
 
 Their crates.io username will remain "example", until such a point that they decide to log in to
-crates.io again, when we will update their username.
+crates.io again. Currently, crates.io will then update their username in our database to match.
+
+This RFC proposes decoupling GitHub account renaming from crates.io username completely, so that
+GitHub account renames do NOT automatically become crates.io account renames.
 
 A similar situation occurs when a user deletes their GitHub account. The username "example" will
 then be available for someone else to claim on GitHub, but will remain claimed on crates.io.
@@ -94,36 +97,22 @@ If a different user does one of the following:
 
 At that point, crates.io will:
 
-- See that the username "example" is taken by a user that has an associated `oauth_github` record
-  with the username "example"
-- Do a request to the GitHub API (or other API once we support others) for the current account
-  status (renamed vs deleted) of the GitHub ID on the previous account
-- Either update the old account to its new username or archive the old account if it has been
-  deleted
-- Let the user currently trying to use the "example" username have it
-
-This transfer of usernames is the current behavior of crates.io today with the cases outlined above
-that only involve GitHub logins.
+- See that the crates.io username "example" is taken
+- Require the user with the GitHub username "example" to pick a different crates.io username
 
 If the old "example" account had it via their associated GitHub account (and thus didn't have the
-mismatch ⚠️ warning discussed above), then a new associated GitHub account logs in with that
-username, it's definitely correct that we should transfer the crates.io username to the new account
-so that they don't have the ⚠️ warning, because at the point that we know the GitHub account
-actually belongs to someone else, the old account definitely should get the warning!
-
-If a user deliberately changes their name to something other than their GitHub username, so that
-their crates.io username was "something" and their GitHub username was "example", and then the user
-changes their GitHub username to "other_username" and logs in to crates.io, we should _not_
-automatically update their crates.io username from "something" to "other_username". That is, if a
-user has already opted out of their crates.io username matching their GitHub username, we should
-assume the user wants their usernames to continue to not match. They could still manually rename
-their crates.io username to "other_username" (as long as no one else has that crates.io username).
+mismatch ⚠️ warning discussed above), then a new associated GitHub account logs in with the GitHub
+username "example" (and a different GitHub ID), at that point we know the GitHub account "example"
+does NOT belong to the crates.io account "example" and the crates.io account "example" should get
+the mismatch ⚠️ warning. TODO should we just proactively monitor GitHub account renames rather than
+doing this check on OAuth login?
 
 If a user manually changes their crates.io username to `best_rust_programmer_ever` (and doesn't
 have the matching GitHub account and thus has the warning symbol), and then later someone creates a
-GitHub account with the username `best_rust_programmer_ever`, both accounts will have the warning
-symbol. The latter user may see this as unfair, but this is where the first-come-first-serve policy
-should be enforced.
+GitHub account with the username `best_rust_programmer_ever` and logs in to crates.io, the GitHub
+user `best_rust_programmer_ever` will need to choose a different crates.io username. Both crates.io
+accounts will have the warning symbol. The latter user may see this as unfair, but this is where
+the first-come-first-serve policy should be enforced.
 
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
@@ -145,15 +134,15 @@ should be enforced.
     table to make the `oauth_github` table the source of truth about GitHub accounts rather than
     the `users` table.
   - If an `oauth_github` record exists with the provided GitHub ID:
-    - Update the username, token, and avatar on that record to what was specified from GitHub.
-    - On the `users` record associated with the `oauth_github` record, if the crates.io username
-      matched the old `oauth_github` username and the `oauth_github` username has been changed,
-      also update the crates.io username (assuming we decide to continue crates.io's existing
-      behavior of automatically picking up GitHub username changes).
+    - Update the username, token, and avatar on the `oauth_github` record to what was specified
+      from GitHub.
+    - Do not update the crates.io username on the `users` record associated with the `oauth_github`
+      record, even if the GitHub username has changed.
   - If an `oauth_github` record doesn't exist with the provided GitHub ID (and thus a `users`
     record doesn't exist either):
-    - Insert a new `users` record with the provided GitHub username, then insert an associated
-      `oauth_github` record with the provided GitHub username, token, and avatar
+    - Insert a new `users` record with the crates.io username the user provided during signup
+    - Then insert an associated `oauth_github` record with the provided GitHub username, token, and
+      avatar
   - If at any time in these operations, we get a violation of the `users.username` uniqueness
     constraint because the crates.io username is already taken, ask the user for a different
     username until they pick a username that isn't taken. Carry the other information along in the
@@ -181,13 +170,8 @@ should be enforced.
 # Rationale and alternatives
 [rationale-and-alternatives]: #rationale-and-alternatives
 
-We could choose to diverge from the current behavior more than proposed here, such as:
+We could choose to diverge from crates.io's current behavior more than proposed here, such as:
 
-- Everyone has to pick/confirm their crates.io username rather than using the GitHub username
-  without any interaction, in situations such as:
-  - When their account is created
-  - The first time they log in after the change goes live
-  - If we detect a GitHub account rename
 - We could force everyone to specify whether they mean the crates.io username or GitHub username
   for every lookup, to force education that they're no longer guaranteed to be the same. That is,
   if someone runs `cargo owner add example`, we'd return an error and ask them to rerun `cargo
