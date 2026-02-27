@@ -13,7 +13,7 @@ GitHub usernames. Crates.io needs this change to make authenticating with differ
 possible while minimizing confusion.
 
 > 🚨 After this RFC is accepted and implemented, you will still only be able to log in to crates.io
-> via GitHub. This is a prerequisite of the evenutal goal to add other methods of logging in. 🚨
+> via GitHub. This is a prerequisite of the eventual goal to add other methods of logging in. 🚨
 
 # Motivation
 [motivation]: #motivation
