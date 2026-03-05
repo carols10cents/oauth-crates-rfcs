@@ -58,7 +58,9 @@ and the account's crates.io username differs from the GitHub username associated
 you will see a warning icon similar to ⚠️ and text that says something like "username does not match
 GitHub username". Given that the common case, and what people are used to being able to know, will
 be that the GitHub and crates.io usernames will match, this will make it obvious in cases where
-that assumption does not hold.
+that assumption does not hold. We may decide after some transition period (say, 1-2 years) that the
+username mismatch warning is no longer needed (especially once crates.io supports OAuth services
+other than GitHub).
 
 When you create an account on crates.io with an OAuth account (GitHub or otherwise), whether or not
 the associated OAuth account's username is currently claimed on crates.io, you will be asked to
