@@ -127,8 +127,7 @@ Crates.io usernames must:
   together. For example, the crates.io usernames `hello-there` and `Hello_There` will be considered
   to be the same: once a user named `hello-there` exists, a user named `Hello_There` will not be
   allowed.
-- Not start or end with a hyphen or underscore
-- Not have consecutive hyphen or underscore characters.
+- Not start with a hyphen or underscore
 - Not exceed 39 characters.
 
 These requirements will be clearly documented on a page on crates.io as well as in the signup form
