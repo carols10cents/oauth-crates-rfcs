@@ -336,6 +336,15 @@ Is this the `carols10cents` you wanted? [y/N]
   adding teams already requires specifying a literal `github:` before the `org:team` when adding
   team owners so there shouldn't be as much confusion around the identity of a team if we choose to
   add different team owners via different services.
+- Should we have a URL for user pages that uses their crates.io ID number (ex:
+  `https://crates.io/users/id/1234` would run the query `SELECT * FROM users WHERE id = 1234`), and
+  thus won't change no matter what happens with the account's username or connected accounts?
+  - How would people discover what their crates.io ID is (without needing to look in the API
+    response)?
+    - Should we start displaying it on user pages?
+    - Should we start using these ID-based URLs as the canonical user URLs? That is, should
+      visiting `https://crates.io/users/carols10cents` redirect to `https://crates.io/users/id/396`?
+    - Should we accept it in the CLI, such as `cargo owner add id:396`?
 
 # Future possibilities
 [future-possibilities]: #future-possibilities
