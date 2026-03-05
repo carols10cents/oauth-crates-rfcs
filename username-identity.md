@@ -42,6 +42,9 @@ crates.io user identities to minimize the possibility of confusion or deliberate
 # Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
+This section will address changes to what users will experience on the crates.io website and via
+the `cargo owner` CLI.
+
 Today, crates.io usernames always match the GitHub username of the account used to log in to
 crates.io (with exceptions for renamed or deleted GitHub accounts that will be discussed below).
 
@@ -208,45 +211,188 @@ from the database on request.
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
-- The `users.gh_login` column is currently not unique because of the rename/delete scenarios above.
-  Write a script that goes through all duplicate `gh_login` values and queries the GitHub API for
-  the associated GitHub ID's current status and either update the `gh_login` value to the current
-  GitHub name (for renames) or update the `gh_login` value to a unique value
-  (`oldname_archived_[randomdigits]`) (for deletions).
-- Once the `users.gh_login` column's values are unique, add a unique constraint in the database.
-- Rename `users.gh_login` column to `users.username` (or `users.login`, but this wouldn't be used
-  to log in so I would go with `username`. And not `users.name` despite that being less repetitive
-  as that field is currently used for the "display name" concept, unless we first rename
-  `users.name` to `users.display_name` or remove that field entirely as discussed in [Unresolved
-  Questions][#unresolved-questions])
-- When we get a GitHub OAuth response for someone signing up or signing in, make the following
-  changes:
-  - Rather than looking up the GitHub ID in the `users` table, look it up in the `oauth_github`
-    table to make the `oauth_github` table the source of truth about GitHub accounts rather than
-    the `users` table.
-  - If an `oauth_github` record exists with the provided GitHub ID:
-    - Update the username, token, and avatar on the `oauth_github` record to what was specified
-      from GitHub.
-    - Do not update the crates.io username on the `users` record associated with the `oauth_github`
-      record, even if the GitHub username has changed.
-  - If an `oauth_github` record doesn't exist with the provided GitHub ID (and thus a `users`
-    record doesn't exist either):
-    - Insert a new `users` record with the crates.io username the user provided during signup
-    - Then insert an associated `oauth_github` record with the provided GitHub username, token, and
-      avatar
-  - If at any time in these operations, we get a violation of the `users.username` uniqueness
-    constraint because the crates.io username is already taken, ask the user for a different
-    username until they pick a username that isn't taken. Carry the other information along in the
-    session.
-- When we get a request for `https://crates.io/users/example`, do the query `SELECT * FROM users
-  WHERE users.username = 'example';`. Also query for associated `oauth_github` records (and
-  eventually all other `oauth_*` associated tables) to be able to display links to the associated
-  GitHub account.
-- When we get a request through `cargo owner add example`, also do the query `SELECT * FROM users
-  WHERE users.username = 'example';`. Also query for associated `oauth_github` records (and
-  eventually all other `oauth_*` associated tables) to be able to return a link to the associated
-  GitHub account in the response provided to Cargo to display for the user adding the owner to use
-  to verify they have just invited the intended person (and remove the owner if not).
+This section will address changes to crates.io's HTTP API. It will not address low-level
+implementation details of the crates.io database schema or backend code changes; those will be
+worked out during implementation of this RFC.
+
+## User API
+
+The `find_user` API is currently defined to respond to URLs in the form `/api/v1/users/{user}`,
+where `{user}` is the username (which is currently the GitHub username that crates.io has been told
+about for that account).
+
+This route would be changed and expanded to allow disambiguation between GitHub and crates.io
+usernames. So for a user with crates.io username `carols10cents` and GitHub username `carolgithub`,
+these API requests would return the same information for this user:
+
+```
+/api/v1/users/carols10cents            // assumes this is the crates.io username
+/api/v1/users/cratesio:carols10cents
+/api/v1/users/github:carolgithub
+```
+
+Requesting `/api/v1/users/carolgithub` would return a 404 Not Found, because there is no crates.io
+username `carolgithub`. We could choose to have this route's implementation attempt a lookup in the
+table of GitHub usernames (and eventually in other services' tables when those are supported) if no
+crates.io username is found, but that seems like it could cause confusion.
+
+`/api/v1/users/{user}` currently returns this information (for the `carols10cents` user):
+
+```json
+{
+	"user": {
+		"id": 396, // crates.io database ID
+		"login": "carols10cents", // crates.io and GitHub username
+		"name": "Carol (Nichols || Goulding)", // display name (as set in GitHub)
+		"avatar": "https://avatars.githubusercontent.com/u/193874?v=4", // from GitHub
+		"url": "https://github.com/carols10cents" // assumes GitHub
+	}
+}
+```
+
+This RFC would change the following:
+
+- `login` would be the crates.io username
+- `name` would be deprecated and the UI would use `login` (we could continue to provide the `name`
+  attribute with its value set to `login` to ease migration. Also see the "display name" Unresolved
+  Question)
+- There would still be an `avatar` URL returned; for how that is managed, see the Unresolved
+  Question
+- `url` would be deprecated in favor of explicitly requesting linked account information (we could
+  continue to provide a GitHub URL if the user has a linked GitHub account)
+- A field named `github_username` (with a value of the string of the Github username that may or
+  may not be the same as the crates.io username) or `github_useranme_matches` (with a value of a
+  boolean that the user's GitHub username is either the same as or different from their crates.io
+  username)
+
+So that the response eventually looks like this (without the values supporting deprecated fields
+that we may choose to offer for more compatibility) for crates.io user `carols10cents` that has
+GitHub username `carolgithub`:
+
+```
+{
+	"user": {
+		"id": 396, // same as before; crates.io database ID
+		"login": "carols10cents", // now the crates.io username
+		"avatar": "https://avatars.githubusercontent.com/u/193874?v=4",
+        "github_username": "carolgithub",
+	}
+}
+```
+
+This request would require querying the `users` table and the `oauth_github` table, but not any
+other services' linked tables to limit database load by default. The GitHub information would be
+used to decide whether to show the ⚠️ warning about username mismatches discussed in the Guide
+section.
+
+If desired, the requester could instead use `/api/v1/users/{user}?include=linked_accounts` (much
+like the current crate API allows for opt-in of returning related data) which would query all OAuth
+tables and return all account information for this user once crates.io supports more services:
+
+```
+{
+	"user": {
+		"id": 396, // same as before; crates.io database ID
+		"login": "carols10cents", // now the crates.io username
+		"avatar": "https://avatars.githubusercontent.com/u/193874?v=4",
+        "github_username": "carolgithub",
+	},
+    "linked_accounts": [
+        {
+            "service": "github",
+            "login": "carolgithub",
+            "avatar": "https://avatars.githubusercontent.com/u/193874?v=4"
+        },
+        {
+            "service": "gitlab",
+            "login": "carols10cents"
+            "avatar": "https://secure.gravatar.com/avatar/5eefdbf7a532f1a36d5cdce703a3b346cadbebc6098c4fce5354af871f662f55"
+        }
+    ]
+}
+```
+
+The `?include=linked_accounts` variant would be called by the frontend when visiting
+`https://crates.io/users/carols10cents`, to be able to display all of a user's linked accounts.
+
+We would likely not request linked accounts for crate pages when displaying ownership information;
+we could add a way to view that information on a crate page on-demand, for example when hovering
+over an owner (or tapping on an icon next to the owner that the frontend shows when viewed on
+mobile devices), we could request the linked account information then and display a "detail card"
+for that owner showing the information on their linked accounts.
+
+## Owner APIs
+
+The current API request for inviting user owners or adding team owners consists of a `PUT` request
+to `/api/v1/crates/[crate name]/owners` with the following JSON (using a request to add user
+`some_user` and team `some_team` from the `some_org` GitHub organization as an example):
+
+```
+{
+    "owners": [
+        "some_user",
+        "github:some_org:some_team"
+    ]
+}
+```
+
+The backend processes owner strings starting with `github` and containing two colons as an organization name and a team name; this behavior will be unchanged.
+
+This request will begin to accept owners specified by strings containing one colon and starting
+with `cratesio`, `github`, and any other OAuth service we eventually add. An owner specification of
+`cratesio:some_user` will only query `users.username` and not any other table. An owner
+specification of `github:some_user` will only query `oauth_github.login` and not any other table.
+As other services are added, we will add a prefix that can be used to only look up usernames in
+that service's table. If the username isn't found in the specified table (say, the `cratesio`
+prefix that specfies the `users` table), the request will return an error even if the username is
+in another table (such as the `oauth_github` table, for this example).
+
+If the owner specification doesn't contain any colons, the behavior is similar to that of the users
+API: we assume it's a crates.io username and look it up in `users.username` only. We will also
+query the `oauth_github` table to see if the crates.io username and GitHub username match. If they
+do match, we will continue with adding this user as an owner. If they don't match, we will return
+an error containing information about the mismatch and asking the user to rerun the command with a
+service prefix and colon in front of the username to ensure we're adding the account they mean to
+add.
+
+An error response would look something like this:
+
+```
+{
+    "errors": [
+        {
+            "detail": "username `some_user` is possibly ambiguous. The crates.io account
+                       `example_username` is associated with:
+
+- https://github.com/something_else
+- [any other accounts once we have that ability]
+
+To confirm this is the account you want to add, please run one of the following:
+
+$ cargo owner --add cratesio:example_username
+$ cargo owner --add github:something_else
+
+If this is not the account you want to add, verify the crates.io username of the account you want.
+                      "
+        }
+    ]
+}
+```
+
+This maintains backwards compatibilty with existing `cargo` versions. We could do additional work
+on Cargo and add more fields if a newer version of Cargo is making the request, to support a
+"confirmation" flow as presented in the "Prior Art" section under Keybase.
+
+The "remove owner" API would behave similarly as the "add owner" API - it will support `cratesio:`
+or `github:` (etc) prefixes to usernames and will return an error if there is no current owner with
+the specified username in the specified service's table. If given a username without a prefix, the
+"remove owner" API will only return an error if there are two current owners of the crate that have
+the username on different services, and will then ask the user to rerun with a prefix to
+disambiguate. That is, if the user runs `cargo owner --remove some_user` and there's a crates.io
+user with the `users.username` of `some_user` and a different account that has the GitHub user
+`some_user`, the API will only return an error if both these accounts are owners of the crate the
+request is being made about. If only one account is an owner, that account will be removed as an
+owner.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -300,7 +446,7 @@ For the `cargo owner --add` CLI, we could show similar disambiguation text and e
 ```
 $ cargo owner --add example
 
-ERROR: There are multiple users with the username "example".
+error: There are multiple users with the username "example".
 
 If you meant https://github.com/example, rerun with `cargo owner --add github:example`.
 If you meant https://gitlab.com/example, rerun with `cargo owner --add gitlab:example`.
