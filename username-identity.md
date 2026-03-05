@@ -319,14 +319,20 @@ Is this the `carols10cents` you wanted? [y/N]
   name" concept completely and only show crates.io usernames everywhere? It seems like the display
   name would be a vector for possible impersonation (and I think that's technically possible today,
   but I'm not sure whether GitHub's policies would allow that)
-- Avatars are also indicators of identities. Once we have multiple authentication services, each
-  possibly providing an avatar, which do we display when a crates.io user account has different
-  accounts associated and different avatars? Do we allow them to pick, and/or upload a completely
-  unaffiliated crates.io avatar (which we'd then have to host; we currently don't host avatars)?
-  Again, I think impersonation via avatar is technically possible today with only GitHub unless
-  GitHub policy enforcement disallows that, and I don't think the decision on avatar resolution is
-  as important as username resolution, but it might make implementation/database queries nicer if
-  we make a similar decision with avatars as with usernames.
+- Avatars are also indicators of identities.
+  - Once we have multiple authentication services, each possibly providing an avatar, which do we
+    display when a crates.io user account has different accounts associated and different avatars?
+  - We currently don't host avatar images; we don't really want to
+  - Could we let the user choose between:
+    - Avatar associated with a linked OAuth account, hosted by the linked service (like we do today
+      with GitHub avatars)
+    - Gravatar associated with the user's verified crates.io email address (which the user could
+      customize via Gravatar)
+    - One placeholder image we provide (ex: Ferris)
+  - Again, I think impersonation via avatar is technically possible today with only GitHub unless
+    GitHub policy enforcement disallows that, and I don't think the decision on avatar resolution is
+    as important as username resolution, but it might make implementation/database queries nicer if
+    we make a similar decision with avatars as with usernames.
 - We have a list of reserved crate names that no one may register that includes top-level Rust
   standard library modules and keywords, reserved Windows filenames, and some swear words or slurs
   (which will never be exhaustive but contains the most common ones in English). We'll probably
