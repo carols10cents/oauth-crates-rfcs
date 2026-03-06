@@ -52,11 +52,10 @@ existing active (that is, not deleted or renamed) accounts will have their crate
 to their current username, their GitHub username.
 
 When you visit your account settings page, you will be able to edit your username to anything that
-isn't already claimed as a crates.io username (We could choose to wait to allow username editing
-until we have multiple ways of logging in, but we could also choose to enable username editing
-sooner). Thus, crates.io usernames will become first-come-first-served as crate names are today.
-Crates.io admins will not change an account's username without the consent of the current username
-holder (see [Unresolved Questions](#unresolved-questions) about username squatting).
+isn't already claimed as a crates.io username. Thus, crates.io usernames will become
+first-come-first-served as crate names are today. Crates.io admins will not change an account's
+username without the consent of the current username holder (see [Unresolved
+Questions](#unresolved-questions) about username squatting).
 
 When you visit a user's page at `https://crates.io/users/example_username`, see a user account
 listed as an owner of a crate in the crate's sidebar, or run `cargo owner add example_username`
@@ -74,7 +73,7 @@ register your crates.io account by choosing a username that hasn't yet been take
 crates.io username field will be prefilled with the associated OAuth account's username and an
 indication of whether that username is available on crates.io or not.
 
-## Renamed and deleted accounts
+## Renamed and deleted GitHub accounts
 
 GitHub allows users to change their username (but keep the same GitHub ID number so that crates.io
 can know it's the same account) or delete their account, which makes the username available for
@@ -141,6 +140,30 @@ Crates.io usernames must:
 These requirements will be clearly documented on a page on crates.io as well as in the signup form
 when we are requiring the person to pick a crates.io username.
 
+## Crates.io account rename restrictions
+
+The biggest concerns with allowing crates.io username changes are impersonation and resurrection
+attacks.
+
+Impersonation is already possible and is already against [crates.io
+policies](https://crates.io/policies), but of course we don't want to make it easier to falsely
+gain the trust of crates.io users by pretending to be a well-known person. We plan to add
+typosquatting checks on usernames similar to those we're already doing for crate names. We also
+plan to limit how often you can change your crates.io username (say, not more often than once every
+30 days).
+
+Resurrection attacks are a subset of impersonation, where a user named `carols10cents`, for
+example, renames away from that username or deletes their account and another user claims the
+`carols10cents` username to appear to be that person to users who don't know about the rename or
+deletion. We plan to limit the re-use of usernames, using a similar mechanism that we have today
+that prevents re-use of a deleted crate name, so that no one could claim an abandonded username
+for, say, 30 days.
+
+We also plan to mitigate the effectiveness of impersonation attacks by making the display of the
+linked accounts associated with a crates.io account very clear so that anyone is able to feel
+confident that the crates.io account has the same owner as the GitHub, GitLab, etc account they
+trust.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
@@ -205,6 +228,8 @@ We could choose to diverge from crates.io's current behavior more than proposed 
   owner add cratesio:example` or `cargo owner add github:example` explicitly. This could be
   confusing for the most common case where these refer to the same user, but would be a way to
   force communication with people that something is changing.
+- We could implement the backend changes for this RFC but choose to wait to allow username editing
+  until we have multiple ways of logging in.
 
 ## "Disambiguation page" alternative
 
@@ -323,8 +348,9 @@ Is this the `carols10cents` you wanted? [y/N]
   your GitHub "display name" that's currently used on crate pages for owners and user pages. Do we
   want to have an authentication-independent "display name"? Or should we get rid of the "display
   name" concept completely and only show crates.io usernames everywhere? It seems like the display
-  name would be a vector for possible impersonation (and I think that's technically possible today,
-  but I'm not sure whether GitHub's policies would allow that)
+  name would be a vector for possible impersonation (one that's technically possible today. It is
+  against crates.io policies, and as far as I can remember we haven't had an account impersonation
+  reported).
 - Avatars are also indicators of identities.
   - Once we have multiple authentication services, each possibly providing an avatar, which do we
     display when a crates.io user account has different accounts associated and different avatars?
