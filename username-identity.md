@@ -15,6 +15,12 @@ possible while minimizing confusion.
 > 🚨 After this RFC is accepted and implemented, you will still only be able to log in to crates.io
 > via GitHub. This is a prerequisite of the eventual goal to add other methods of logging in. 🚨
 
+The biggest changes to crates.io as a result of this RFC will be:
+
+- There will be a crates.io username that may not always match the associated GitHub username
+- Crates.io will no longer automatically update your crates.io username if you rename your GitHub
+  account
+
 # Motivation
 [motivation]: #motivation
 
