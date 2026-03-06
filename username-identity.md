@@ -111,8 +111,7 @@ If the old "example" account had it via their associated GitHub account (and thu
 mismatch ⚠️ warning discussed above), then a new associated GitHub account logs in with the GitHub
 username "example" (and a different GitHub ID), at that point we know the GitHub account "example"
 does NOT belong to the crates.io account "example" and the crates.io account "example" should get
-the mismatch ⚠️ warning. TODO should we just proactively monitor GitHub account renames rather than
-doing this check on OAuth login?
+the mismatch ⚠️ warning.
 
 If a user manually changes their crates.io username to `best_rust_programmer_ever` (and doesn't
 have the matching GitHub account and thus has the warning symbol), and then later someone creates a
@@ -404,7 +403,3 @@ abuse as it's easier to create anonymous email addresses than it is to maintain 
 standing on services like GitHub. When we choose which services to add as OAuth providers, we will
 assess in what ways the candidate services also provide these protections if we want to continue to
 have this benefit.
-
-Once we have the code to check accounts with GitHub's API to see if they've been renamed or
-deleted, we could proactively periodically run that code on accounts that haven't been used
-recently to keep crates.io more accurate regardless of when people log in.
