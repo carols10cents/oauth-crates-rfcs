@@ -137,6 +137,12 @@ Crates.io usernames must:
 - Not start with a hyphen or underscore
 - Not exceed 39 characters.
 
+We have a list of reserved crate names that no one may register that includes top-level Rust
+standard library modules and keywords, reserved Windows filenames, and some swear words or slurs
+(which will never be exhaustive but contains the most common ones in English). We'll have a similar
+list of reserved usernames that no one may use; GitHub's Terms of Service is providing us some
+protection currently that we'd need to manage ourselves.
+
 These requirements will be clearly documented on a page on crates.io as well as in the signup form
 when we are requiring the person to pick a crates.io username.
 
@@ -365,11 +371,6 @@ Is this the `carols10cents` you wanted? [y/N]
     GitHub policy enforcement disallows that, and I don't think the decision on avatar resolution is
     as important as username resolution, but it might make implementation/database queries nicer if
     we make a similar decision with avatars as with usernames.
-- We have a list of reserved crate names that no one may register that includes top-level Rust
-  standard library modules and keywords, reserved Windows filenames, and some swear words or slurs
-  (which will never be exhaustive but contains the most common ones in English). We'll probably
-  need to have a similar list of reserved usernames that no one may use; GitHub's Terms of Service
-  is providing us some protection currently that we'd need to manage ourselves.
 - We are not yet committing to the support of organization/team owners from other services, but
   adding teams already requires specifying a literal `github:` before the `org:team` when adding
   team owners so there shouldn't be as much confusion around the identity of a team if we choose to
