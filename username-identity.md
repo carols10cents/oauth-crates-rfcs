@@ -170,6 +170,16 @@ linked accounts associated with a crates.io account very clear so that anyone is
 confident that the crates.io account has the same owner as the GitHub, GitLab, etc account they
 trust.
 
+In the database, accessible by admins only, we will track history of username changes (starting
+from whenever the feature is implemented; we don't have historical data of GitHub username
+changes). This could be useful for forensic investigation of accounts that may be attempting to
+impersonate other users. We could display historical usernames and their dates on a user's page for
+transparency, but this would be problematic in cases such as someone transitioning and wanting to
+remove all association with their deadname (if their name was part of their crates.io username). We
+will update [the privacy policy](https://rustfoundation.org/policy/privacy-policy/) section on
+crates.io to make this retention clear, and we will delete even admin-only viewable information
+from the database on request.
+
 # Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
@@ -398,12 +408,3 @@ have this benefit.
 Once we have the code to check accounts with GitHub's API to see if they've been renamed or
 deleted, we could proactively periodically run that code on accounts that haven't been used
 recently to keep crates.io more accurate regardless of when people log in.
-
-We could limit how often a user may change their username, to potentially limit cases where someone
-is trying to impersonate someone or confuse others.
-
-We could track history of username changes (starting from whenever the feature is implemented, we
-don't have historical data) and display on a user's page their historical usernames and dates when
-they were changed. This would be good for transparency but problematic in cases such as someone
-transitioning and wanting to remove all association with their deadname (if their name is part of
-their GitHub account). Perhaps this information could be retained and viewable by admins only.
