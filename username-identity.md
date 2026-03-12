@@ -26,8 +26,8 @@ The biggest changes to crates.io as a result of this RFC will be:
 
 Crates.io's code currently has a one-to-one mapping between crates.io accounts and GitHub accounts.
 The URL `https://crates.io/users/some_username` displays the crates owned by the user with the
-GitHub account `some_username`, and running `cargo owner add some_username` adds `some_username` as
-an owner of the current crate. Owners of a crate appear in the sidebar. Crate ownership conveys
+GitHub account `some_username`, and running `cargo owner --add some_username` adds `some_username`
+as an owner of the current crate. Owners of a crate appear in the sidebar. Crate ownership conveys
 trust.
 
 Eventually (after future RFCs and additional work after this RFC), we'd like to add the ability to
@@ -57,15 +57,40 @@ first-come-first-served as crate names are today. Crates.io admins will not chan
 username without the consent of the current username holder (see [Unresolved
 Questions](#unresolved-questions) about username squatting).
 
-When you visit a user's page at `https://crates.io/users/example_username`, see a user account
-listed as an owner of a crate in the crate's sidebar, or run `cargo owner add example_username`
-and the account's crates.io username differs from the GitHub username associated with the account,
-you will see a warning icon similar to ⚠️ and text that says something like "username does not match
-GitHub username". Given that the common case, and what people are used to being able to know, will
-be that the GitHub and crates.io usernames will match, this will make it obvious in cases where
-that assumption does not hold. We may decide after some transition period (say, 1-2 years) that the
-username mismatch warning is no longer needed (especially once crates.io supports OAuth services
-other than GitHub).
+When you visit a user's page at `https://crates.io/users/example_username` or see a user account
+listed as an owner of a crate in the crate's sidebar and the account's crates.io username differs
+from the GitHub username associated with the account, you will see a warning icon similar to ⚠️ and
+text that says something like "username does not match GitHub username". Given that the common
+case, and what people are used to being able to know, will be that the GitHub and crates.io
+usernames will match, this will make it obvious in cases where that assumption does not hold. We
+may decide after some transition period (say, 1-2 years) that the username mismatch warning is no
+longer needed (especially once crates.io supports OAuth services other than GitHub).
+
+If you run `cargo owner --add example_username` and the account's crates.io username differs from
+the GitHub username associated with the account, the command will error with a message similar to:
+
+```
+$ cargo owner --add example_username
+error: username `example_username` is possibly ambiguous
+
+Caused by:
+  The crates.io account `example_username` is associated with:
+
+  - https://github.com/something_else
+  - [any other accounts once we have that ability]
+
+  To confirm this is the account you want to add, please run one of the following:
+
+  $ cargo owner --add cratesio:example_username
+  $ cargo owner --add github:something_else
+
+  If this is not the account you want to add, verify the crates.io username of the account you want.
+```
+
+Returning an error and requesting the user re-run a command with a disambiguation prefix to confirm
+is the easiest way to maintain compatibility with existing versions of Cargo. With some additional
+work on Cargo, newer versions could be made that only require a `y` or `n` confirmation; see the
+"Prior Art" section on Keybase for one possibility.
 
 After this RFC is implemented, if you create an account on crates.io with an OAuth account (GitHub
 or otherwise), whether or not the associated OAuth account's username is currently claimed on
@@ -240,10 +265,10 @@ We could choose to diverge from crates.io's current behavior more than proposed 
 
 - We could force everyone to specify whether they mean the crates.io username or GitHub username
   for every lookup, to force education that they're no longer guaranteed to be the same. That is,
-  if someone runs `cargo owner add example`, we'd return an error and ask them to rerun `cargo
-  owner add cratesio:example` or `cargo owner add github:example` explicitly. This could be
-  confusing for the most common case where these refer to the same user, but would be a way to
-  force communication with people that something is changing.
+  if someone runs `cargo owner --add example`, we'd always return an error and ask them to rerun
+  `cargo owner --add cratesio:example` or `cargo owner --add github:example` explicitly even if
+  they both refer to the same account. This could be confusing for the most common case, but would
+  be a way to force communication with people that something is changing.
 - We could implement the backend changes for this RFC but choose to wait to allow username editing
   until we have multiple ways of logging in.
 
@@ -270,15 +295,15 @@ by including their crates.io user record ID (something like
 `https://crates.io/users/example/1234`), or by including the name of the service where they hold
 the username (something like `https://crates.io/users/example/github`).
 
-For the `cargo owner add` CLI, we could show similar disambiguation text and exit with an error:
+For the `cargo owner --add` CLI, we could show similar disambiguation text and exit with an error:
 
 ```
-$ cargo owner add example
+$ cargo owner --add example
 
 ERROR: There are multiple users with the username "example".
 
-If you meant https://github.com/example, rerun with `cargo owner add github:example`.
-If you meant https://gitlab.com/example, rerun with `cargo owner add gitlab:example`.
+If you meant https://github.com/example, rerun with `cargo owner --add github:example`.
+If you meant https://gitlab.com/example, rerun with `cargo owner --add gitlab:example`.
 ```
 
 The disambiguation page and extra specification for users who happen to have colliding usernames
@@ -326,7 +351,7 @@ conveys authority.
 [Keybase](https://keybase.io/) is a service that tries to make working with public key cryptography
 easier. They have ways of proving ownership of various accounts on other services to help people
 ensure they're communicating with the account that belongs to the intended person. Keybase also has
-a CLI with a confirmation flow that we could use as inspiration for the `cargo owner add` user
+a CLI with a confirmation flow that we could use as inspiration for the `cargo owner --add` user
 flow. See [the Keybase documentation](https://book.keybase.io/docs/server), under the heading "Step
 3: the human review":
 
@@ -342,10 +367,10 @@ flow. See [the Keybase documentation](https://book.keybase.io/docs/server), unde
 > Is this the maria you wanted? [y/N]
 > ```
 
-With `cargo owner add`, once we support multiple logins, the CLI could look something like this:
+With `cargo owner --add`, once we support multiple logins, the CLI could look something like this:
 
 ```
-$ cargo owner add carols10cents
+$ cargo owner --add carols10cents
 
 Crates.io account `carols10cents` is associated with:
 ✔ https://github.com/carols10cents
@@ -393,7 +418,7 @@ Is this the `carols10cents` you wanted? [y/N]
     - Should we start displaying it on user pages?
     - Should we start using these ID-based URLs as the canonical user URLs? That is, should
       visiting `https://crates.io/users/carols10cents` redirect to `https://crates.io/users/id/396`?
-    - Should we accept it in the CLI, such as `cargo owner add id:396`?
+    - Should we accept it in the CLI, such as `cargo owner --add id:396`?
 
 # Future possibilities
 [future-possibilities]: #future-possibilities
