@@ -67,11 +67,12 @@ that assumption does not hold. We may decide after some transition period (say, 
 username mismatch warning is no longer needed (especially once crates.io supports OAuth services
 other than GitHub).
 
-When you create an account on crates.io with an OAuth account (GitHub or otherwise), whether or not
-the associated OAuth account's username is currently claimed on crates.io, you will be asked to
-register your crates.io account by choosing a username that hasn't yet been taken on crates.io. The
-crates.io username field will be prefilled with the associated OAuth account's username and an
-indication of whether that username is available on crates.io or not.
+After this RFC is implemented, if you create an account on crates.io with an OAuth account (GitHub
+or otherwise), whether or not the associated OAuth account's username is currently claimed on
+crates.io, you will be asked to register your crates.io account by choosing a username that hasn't
+yet been taken on crates.io. The crates.io username field will be prefilled with the associated
+OAuth account's username and an indication of whether that username is available on crates.io or
+not.
 
 ## Renamed and deleted GitHub accounts
 
