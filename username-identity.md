@@ -434,7 +434,7 @@ Wikipedia "disambiguation page", something like:
 > There are multiple users with the username "example". Did you mean:
 >
 > - [example on GitHub](https://crates.io/users/example/1234)
-> - [example on GitLab]((https://crates.io/users/example/5678)
+> - [example on GitLab](https://crates.io/users/example/5678)
 
 and then you'd have to click an extra time. We could support direct linking to these users either
 by including their crates.io user record ID (something like
