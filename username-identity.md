@@ -259,10 +259,8 @@ This RFC would change the following:
   Question
 - `url` would be deprecated in favor of explicitly requesting linked account information (we could
   continue to provide a GitHub URL if the user has a linked GitHub account)
-- A field named `github_username` (with a value of the string of the Github username that may or
-  may not be the same as the crates.io username) or `github_useranme_matches` (with a value of a
-  boolean that the user's GitHub username is either the same as or different from their crates.io
-  username)
+- A field named `github_useranme_matches` (with a value of a boolean that the user's GitHub
+  username is either the same as, or different from, their crates.io username)
 
 So that the response eventually looks like this (without the values supporting deprecated fields
 that we may choose to offer for more compatibility) for crates.io user `carols10cents` that has
@@ -274,15 +272,15 @@ GitHub username `carolgithub`:
 		"id": 396, // same as before; crates.io database ID
 		"login": "carols10cents", // now the crates.io username
 		"avatar": "https://avatars.githubusercontent.com/u/193874?v=4",
-        "github_username": "carolgithub",
+        "github_username_matches": false,
 	}
 }
 ```
 
 This request would require querying the `users` table and the `oauth_github` table, but not any
-other services' linked tables to limit database load by default. The GitHub information would be
-used to decide whether to show the ⚠️ warning about username mismatches discussed in the Guide
-section.
+other services' linked tables to limit database load by default. The `github_username_matches`
+would be used to decide whether to show the ⚠️ warning about username mismatches discussed in the
+Guide section.
 
 If desired, the requester could instead use `/api/v1/users/{user}?include=linked_accounts` (much
 like the current crate API allows for opt-in of returning related data) which would query all OAuth
@@ -294,7 +292,7 @@ tables and return all account information for this user once crates.io supports 
 		"id": 396, // same as before; crates.io database ID
 		"login": "carols10cents", // now the crates.io username
 		"avatar": "https://avatars.githubusercontent.com/u/193874?v=4",
-        "github_username": "carolgithub",
+        "github_username_matches": false,
 	},
     "linked_accounts": [
         {
