@@ -57,7 +57,8 @@ to their current username, their GitHub username.
 When you visit your account settings page, you will be able to edit your username to anything that
 isn't already claimed as a crates.io username. Thus, crates.io usernames will become
 first-come-first-served as crate names are today. Crates.io admins will not change an account's
-username without the consent of the current username holder (see [Unresolved
+username without the consent of the current username holder, except in cases such as Code of
+Conduct or usage policy violations like impersonation (see [Unresolved
 Questions](#unresolved-questions) about username squatting).
 
 When you visit a user's page at `https://crates.io/users/example_username` or see a user account
