@@ -219,23 +219,21 @@ worked out during implementation of this RFC.
 ## User API
 
 The `find_user` API is currently defined to respond to URLs in the form `/api/v1/users/{user}`,
-where `{user}` is the username (which is currently the GitHub username that crates.io has been told
-about for that account).
+where `{user}` is currently the GitHub username that crates.io has been told about for that account.
 
-This route would be changed and expanded to allow disambiguation between GitHub and crates.io
-usernames. So for a user with crates.io username `carols10cents` and GitHub username `carolgithub`,
-these API requests would return the same information for this user:
+This route would be changed such that `{user}` would be assumed to be the crates.io username only.
+So for a user with crates.io username `carols10cents` and GitHub username `carolgithub`, the API
+request `/api/v1/users/carols10cents` would return this user's information, and requesting
+`/api/v1/users/carolgithub` would return a 404 Not Found, because there is no crates.io username
+`carolgithub`.
 
-```
-/api/v1/users/carols10cents            // assumes this is the crates.io username
-/api/v1/users/cratesio:carols10cents
-/api/v1/users/github:carolgithub
-```
+We could choose to have this route's implementation attempt a lookup in the table of GitHub
+usernames (and eventually in other services' tables when those are supported) if no crates.io
+username is found, but that seems like it could cause confusion.
 
-Requesting `/api/v1/users/carolgithub` would return a 404 Not Found, because there is no crates.io
-username `carolgithub`. We could choose to have this route's implementation attempt a lookup in the
-table of GitHub usernames (and eventually in other services' tables when those are supported) if no
-crates.io username is found, but that seems like it could cause confusion.
+See the [Unresolved Questions](#unresolved-questions) section for possibly changing this API's
+parameter to optionally accept a prefix with the username to allow lookup by GitHub (or other
+service) username.
 
 `/api/v1/users/{user}` currently returns this information (for the `carols10cents` user):
 
@@ -566,6 +564,25 @@ Is this the `carols10cents` you wanted? [y/N]
     - Should we start using these ID-based URLs as the canonical user URLs? That is, should
       visiting `https://crates.io/users/carols10cents` redirect to `https://crates.io/users/id/396`?
     - Should we accept it in the CLI, such as `cargo owner --add id:396`?
+- Should we have a URL for user pages or for the user API that allows specifying a prefix of an
+  OAuth service, to allow for looking up a crates.io user when you only know, say, their GitHub
+  username? For example, the user page at `https://crates.io/users/{user}` calls the `find_user`
+  API, which is currently defined to respond to URLs in the form `/api/v1/users/{user}` where
+  `{user}` is the username (which is currently the GitHub username but when this RFC is implemented
+  will be the crates.io username).
+
+  This route could be changed and expanded to allow disambiguation between GitHub, other services,
+  and crates.io usernames. So for a user with crates.io username `carols10cents` and GitHub
+  username `carolgithub`, these API requests could return the same information for this user:
+
+  ```
+  /api/v1/users/carols10cents            // assumes this is the crates.io username
+  /api/v1/users/cratesio:carols10cents
+  /api/v1/users/github:carolgithub
+  ```
+
+  Is this behavior useful and do we want to commit to it in our public API? Do we want to offer it
+  in an experimental form to see how/if it's used?
 
 # Future possibilities
 [future-possibilities]: #future-possibilities
