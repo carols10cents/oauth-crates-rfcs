@@ -73,7 +73,7 @@ longer needed (especially once crates.io supports OAuth services other than GitH
 If you run `cargo owner --add example_username` and the account's crates.io username differs from
 the GitHub username associated with the account, the command will error with a message similar to:
 
-```
+```console
 $ cargo owner --add example_username
 error: username `example_username` is possibly ambiguous
 
@@ -266,7 +266,7 @@ So that the response eventually looks like this (without the values supporting d
 that we may choose to offer for more compatibility) for crates.io user `carols10cents` that has
 GitHub username `carolgithub`:
 
-```
+```json
 {
 	"user": {
 		"id": 396, // same as before; crates.io database ID
@@ -286,7 +286,7 @@ If desired, the requester could instead use `/api/v1/users/{user}?include=linked
 like the current crate API allows for opt-in of returning related data) which would query all OAuth
 tables and return all account information for this user once crates.io supports more services:
 
-```
+```json
 {
 	"user": {
 		"id": 396, // same as before; crates.io database ID
@@ -324,7 +324,7 @@ The current API request for inviting user owners or adding team owners consists 
 to `/api/v1/crates/[crate name]/owners` with the following JSON (using a request to add user
 `some_user` and team `some_team` from the `some_org` GitHub organization as an example):
 
-```
+```json
 {
     "owners": [
         "some_user",
@@ -357,7 +357,7 @@ add.
 
 An error response would look something like this:
 
-```
+```json
 {
     "errors": [
         {
@@ -443,7 +443,7 @@ the username (something like `https://crates.io/users/example/github`).
 
 For the `cargo owner --add` CLI, we could show similar disambiguation text and exit with an error:
 
-```
+```console
 $ cargo owner --add example
 
 error: There are multiple users with the username "example".
@@ -505,7 +505,7 @@ flow. See [the Keybase documentation](https://book.keybase.io/docs/server), unde
 > verified all of them. Now you can review the usernames it verified, to determine if it's the
 > maria you wanted.
 >
-> ```
+> ```console
 > ✔ maria2929 on twitter: https://twitter.com/2131231232133333...
 > ✔ pasc4l_programmer on github: https://gist.github.com/pasc4...
 > ✔ admin of mariah20.com via HTTPS: https://mariah20/keybase.tx...
@@ -515,7 +515,7 @@ flow. See [the Keybase documentation](https://book.keybase.io/docs/server), unde
 
 With `cargo owner --add`, once we support multiple logins, the CLI could look something like this:
 
-```
+```console
 $ cargo owner --add carols10cents
 
 Crates.io account `carols10cents` is associated with:
@@ -576,7 +576,7 @@ Is this the `carols10cents` you wanted? [y/N]
   and crates.io usernames. So for a user with crates.io username `carols10cents` and GitHub
   username `carolgithub`, these API requests could return the same information for this user:
 
-  ```
+  ```text
   /api/v1/users/carols10cents            // assumes this is the crates.io username
   /api/v1/users/cratesio:carols10cents
   /api/v1/users/github:carolgithub
