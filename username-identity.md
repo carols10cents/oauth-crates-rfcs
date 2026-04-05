@@ -336,13 +336,16 @@ to `/api/v1/crates/[crate name]/owners` with the following JSON (using a request
 The backend processes owner strings starting with `github` and containing two colons as an organization name and a team name; this behavior will be unchanged.
 
 This request will begin to accept owners specified by strings containing one colon and starting
-with `cratesio`, `github`, and any other OAuth service we eventually add. An owner specification of
-`cratesio:some_user` will only query `users.username` and not any other table. An owner
+with `cratesio`[^1], `github`, and any other OAuth service we eventually add. An owner specification
+of `cratesio:some_user` will only query `users.username` and not any other table. An owner
 specification of `github:some_user` will only query `oauth_github.login` and not any other table.
 As other services are added, we will add a prefix that can be used to only look up usernames in
 that service's table. If the username isn't found in the specified table (say, the `cratesio`
 prefix that specfies the `users` table), the request will return an error even if the username is
 in another table (such as the `oauth_github` table, for this example).
+
+[^1]: The `cratesio` prefix may possibly be `crates.io`, `crates_io`, `crates-io`, or all of them,
+to be bikeshed during implementation.
 
 If the owner specification doesn't contain any colons, the behavior is similar to that of the users
 API: we assume it's a crates.io username and look it up in `users.username` only. We will also
