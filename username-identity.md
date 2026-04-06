@@ -590,6 +590,8 @@ Is this the `carols10cents` you wanted? [y/N]
 
   Is this behavior useful and do we want to commit to it in our public API? Do we want to offer it
   in an experimental form to see how/if it's used?
+- Is there a way we could avoid having both hyphens and underscores in usernames and needing to
+  normalize them together for uniqueness purposes, which can be confusing?
 
 # Future possibilities
 [future-possibilities]: #future-possibilities
