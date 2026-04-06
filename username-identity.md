@@ -164,7 +164,8 @@ Crates.io usernames must:
   together. For example, the crates.io usernames `hello-there` and `Hello_There` will be considered
   to be the same: once a user named `hello-there` exists, a user named `Hello_There` will not be
   allowed.
-- Not start with a hyphen or underscore
+- Not start with a hyphen or underscore. See [Unresolved Questions](#unresolved-questions) for why
+  not prohibiting ending with these characters or prohibiting two of these characters in a row.
 - Not exceed 39 characters.
 
 [^why_underscores]: Even though `github.com` does not allow you to create an account with a
@@ -261,8 +262,8 @@ This RFC would change the following:
 - `name` would be deprecated and the UI would use `login` (we could continue to provide the `name`
   attribute with its value set to `login` to ease migration. Also see the "display name" Unresolved
   Question)
-- There would still be an `avatar` URL returned; for how that is managed, see the Unresolved
-  Question
+- There would still be an `avatar` URL returned; for how that is managed, see the [Unresolved
+  Questions](#unresolved-questions)
 - `url` would be deprecated in favor of explicitly requesting linked account information (we could
   continue to provide a GitHub URL if the user has a linked GitHub account)
 - A field named `github_useranme_matches` (with a value of a boolean that the user's GitHub
@@ -592,6 +593,15 @@ Is this the `carols10cents` you wanted? [y/N]
   in an experimental form to see how/if it's used?
 - Is there a way we could avoid having both hyphens and underscores in usernames and needing to
   normalize them together for uniqueness purposes, which can be confusing?
+- There are usernames in the database currently that contain two hyphens in a row or end in a
+  hyphen. Example: [@ra--](https://github.com/ra--). I suspect GitHub didn't initially prohibit
+  this, but now prohibit new accounts from doing this. If we wanted to disallow consecutive hyphens
+  or ending in a hyphen, and someone with a legacy GitHub account like this who hasn't signed up
+  for crates.io before but does after this change, we could force them to have a crates.io username
+  that doesn't match their GitHub account. This would mean they'd get the ⚠️ which would be unfair
+  because there's no way they could match their GitHub account. Alternatively, we could allow
+  consecutive hyphens or ending in hyphen _only_ if that matches your GitHub account exactly. Would
+  this be confusing? Is this a significant number of accounts worth handling specially?
 
 # Future possibilities
 [future-possibilities]: #future-possibilities
