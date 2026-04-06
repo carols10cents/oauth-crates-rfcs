@@ -157,7 +157,8 @@ crates.io accounts will be valid under whatever rules we decide on.
 
 Crates.io usernames must:
 
-- Only contain alphanumeric characters `[a-zA-Z0-9]`, hyphens `-`, and underscores `_`.
+- Only contain alphanumeric characters `[a-zA-Z0-9]`, hyphens `-`, and underscores `_`
+  [^why_underscores].
 - Be unique case insensitively and hyphen/underscore insensitively, much like crate names. That is,
   uniqueness will be determined by normalizing case and normalizing hyphens and underscores
   together. For example, the crates.io usernames `hello-there` and `Hello_There` will be considered
@@ -165,6 +166,11 @@ Crates.io usernames must:
   allowed.
 - Not start with a hyphen or underscore
 - Not exceed 39 characters.
+
+[^why_underscores]: Even though `github.com` does not allow you to create an account with a
+username that contains an underscore, [Enterprise Managed
+Users](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/iam-configuration-reference/username-considerations-for-external-authentication) get a username that ends in `_[enterprise
+shortcode]`. We have accounts of this sort in crates.io's database today.
 
 We have a list of reserved crate names that no one may register that includes top-level Rust
 standard library modules and keywords, reserved Windows filenames, and some swear words or slurs
